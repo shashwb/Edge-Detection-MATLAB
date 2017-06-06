@@ -1,0 +1,55 @@
+clear;
+
+lena = imread('lena.png');
+lenaDouble = double(lena);
+
+figure
+imshow(lena)
+title('Original Picture')
+
+
+sigmas = 2;
+figure;
+
+for i=1:length(sigmas)
+
+    % Step 1
+    % Filter the image by Gaussian lowpass filter
+    N = 6;
+    [X, Y] = meshgrid(-N/2:N/2-1, -N/2:N/2-1);
+    G = 1/(2*pi*sigmas(i)^2)*exp(-(X.^2 + Y.^2)/(2*sigmas(i)^2));
+    G = G/sum(G(:));
+%     
+%     h = fspecial('gaussian', 20, sigmas(i));
+%     bluredImage = imfilter(lena, h);
+
+    bluredImage = (conv2(lenaDouble, G, 'same'));
+    subplot(3,4,4*(i-1)+1); 
+    imshow(bluredImage)
+    title('Blurred Picture')
+
+
+    % Filter image with Laplacian filter
+    H = [-1 1; 1 -1];
+    laplacian = conv2(double(bluredImage), H, 'same');
+    logImage = laplacian;
+    logImage(abs(laplacian) < .04*max(laplacian(:))) = 128;
+
+    subplot(3,4,4*(i-1)+2); 
+    imshow(logImage)
+    title('2(a)')
+
+    
+    edgeImage = zeros(size(bluredImage));
+    edgeImage(laplacian > 0) = 255;
+    subplot(3,4,4*(i-1)+3); 
+    imshow(edgeImage)
+    title('2(b)')
+
+
+    zeroImage = 255*ones(size(bluredImage));
+    zeroImage(abs(laplacian) < .04*max(laplacian(:))) = 0;
+    subplot(3,4,4*(i-1)+4); 
+    imshow(zeroImage)
+    title('2(c)')
+end
